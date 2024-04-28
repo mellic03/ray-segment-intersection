@@ -97,6 +97,15 @@ let lines = [];
 
 let P1 = [];
 let P2 = [];
+let P3 = [
+    [new vec2(1.5*250, 1.5*150), new vec2(1.5*350, 1.5*120)],
+    [new vec2(1.5*350, 1.5*120), new vec2(1.5*300, 1.5*200)],
+    [new vec2(1.5*300, 1.5*200), new vec2(1.5*340, 1.5*225)],
+    [new vec2(1.5*340, 1.5*225), new vec2(1.5*400, 1.5*150)],
+    [new vec2(1.5*400, 1.5*150), new vec2(1.5*400, 1.5*300)],
+    [new vec2(1.5*400, 1.5*300), new vec2(1.5*300, 1.5*300)],
+    [new vec2(1.5*300, 1.5*300), new vec2(1.5*250, 1.5*150)]
+];
 
 let P1Theta = 0.0;
 let P2Theta = 0.0;
@@ -104,19 +113,45 @@ let P2Theta = 0.0;
 let P1NGon = 3;
 let P2NGon = 4;
 
+let xmin;
+let xmax;
+let ymin;
+let ymax;
+
 
 function setup()
 {
     createCanvas(1000, 500);
     P2Theta = radians(45.0);
+
+
+    /*
+        Bounding region:
+
+        xmin = max( min(red x),  min(blue x) )
+        xmax = min( max(red x),  max(blue x) )
+        ymin = max( min(red y),  min(blue y) )
+        ymax = min( max(red y),  max(blue y) )
+    */
+
+    // let bounds1 = generateNGon(P1, P1NGon, A, 150, P1Theta);
+    // let bounds2 = generateNGon(P2, P2NGon, B, 150, P2Theta);
+    
+    
+    generateNGon(P2, P2NGon, B, 150, P2Theta);
+
+    // xmin = max(bounds1[0], bounds2[0]);
+    // xmax = min(bounds1[1], bounds2[1]);
+    // ymin = max(bounds1[2], bounds2[2]);
+    // ymax = min(bounds1[3], bounds2[3]);
 }
 
 
 let origin     = new vec2(256, 256);
-let dir        = new vec2(1.0, 1.0);
+let dir        = new vec2(1.0, 0.01);
 let A          = new vec2(255, 255);
 let B          = new vec2(455, 255);
-let overlapRes = 15.0;
+let overlapRes = 8.0;
 let rayStroke  = 0;
 
 function draw()
@@ -130,21 +165,21 @@ function draw()
 
 
     P1 = [];
-    P2 = [];
+    // P2 = [];
 
     generateNGon(P1, P1NGon, A, 150, P1Theta);
-    generateNGon(P2, P2NGon, B, 150, P2Theta);
+    // generateNGon(P2, P2NGon, B, 150, P2Theta);
 
 
     strokeWeight(2);
     rayStroke = 0;
 
     drawLines(P1);
-    drawLines(P2);
+    drawLines(P3);
 
-    overlapRes = max(overlapRes, 2.0);
-    overlapRes = min(overlapRes, 50.0);
-    let area = overlapArea(P1, P2, overlapRes);
+    overlapRes = max(overlapRes, 1.0);
+    overlapRes = min(overlapRes, 512.0);
+    let area = overlapArea(P1, P3, overlapRes);
 
 
     strokeWeight(1);
@@ -179,7 +214,7 @@ function draw()
     noStroke();
     textSize(16)
 
-    text("Increade/decrease resolution: up/down arrow keys", 20, 50);
+    text("Increase/decrease resolution: up/down arrow keys", 20, 50);
     text("Cycle through polygons: left/right arrow keys", 20, 80);
     text("Rotate: q/e and u/o", 20, 110);
     text("Move A: wasd", 20, 140);
@@ -197,7 +232,7 @@ function pointInPolygon( x, y, P )
 
     for (let line of P)
     {
-        if (ray_line_intersection(new vec2(x, y), new vec2(1, 0), line[0], line[1]))
+        if (ray_line_intersection(new vec2(x, y), new vec2(0.999, 0.0001), line[0], line[1]))
         {
             total += 1;
         }
@@ -212,7 +247,30 @@ function pointInPolygon( x, y, P )
 }
 
 
-function overlapArea( A, B, resolution )
+/**
+ * @param {*} A 
+ * @param {*} B 
+ * @returns (xmin, xmax, ymin, ymax)
+*/
+function minMaxIntersections( A, B )
+{
+    for (let l1 of A)
+    {
+        for (let l2 of B)
+        {
+
+        }
+    }
+}
+
+
+function _overlapArea( A, B, size )
+{
+
+}
+
+
+function overlapArea( A, B, width )
 {
     let xmin = +999999999999.0;
     let xmax = -999999999999.0;
@@ -226,6 +284,12 @@ function overlapArea( A, B, resolution )
         ymin = min(ymin, line[0].y);
         ymax = max(ymax, line[0].y);
     }
+    let bounds1 = [xmin, xmax, ymin, ymax];
+
+    xmin = +999999999999.0;
+    xmax = -999999999999.0;
+    ymin = +999999999999.0;
+    ymax = -999999999999.0;
 
     for (let line of B)
     {
@@ -234,26 +298,38 @@ function overlapArea( A, B, resolution )
         ymin = min(ymin, line[0].y);
         ymax = max(ymax, line[0].y);  
     }
+    let bounds2 = [xmin, xmax, ymin, ymax];
+
+
+    xmin = max(bounds1[0], bounds2[0]);
+    xmax = min(bounds1[1], bounds2[1]);
+    ymin = max(bounds1[2], bounds2[2]);
+    ymax = min(bounds1[3], bounds2[3]);
+
 
     rectMode(CENTER);
     noStroke();
 
     let area = 0.0;
 
-    for (let y=ymin; y<=ymax; y+=resolution)
+    let borders = [];
+
+    let step  = max(ymax-ymin, xmax-xmin) / width;
+
+    for (let y=ymin; y<=ymax; y+=step)
     {
-        for (let x=xmin; x<=xmax; x+=resolution)
+        for (let x=xmin; x<=xmax; x+=step)
         {
             fill(255, 100, 100, 50);
 
             if (pointInPolygon(x, y, A) && pointInPolygon(x, y, B))
             {
-                area += (resolution / 100)**2;
+                area += (step / 100)**2;
 
                 fill(100, 255, 100, 50);
             }
 
-            rect(x, y, resolution*0.95);
+            rect(x, y, step*0.95);
         }
     }
 
@@ -327,12 +403,12 @@ function keyPressed()
 
     if (keyIsDown(38))
     {
-        overlapRes -= 5;
+        overlapRes *= 2;
     }
 
     if (keyIsDown(40))
     {
-        overlapRes += 5;
+        overlapRes /= 2;
     }
 }
 
