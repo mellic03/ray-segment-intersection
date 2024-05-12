@@ -107,10 +107,10 @@ let P3 = [
     [new vec2(1.5*300, 1.5*300), new vec2(1.5*250, 1.5*150)]
 ];
 
-let P1Theta = 0.0;
-let P2Theta = 0.0;
+let P1Theta = Math.PI/2.0;
+let P2Theta = Math.PI/2.0;
 
-let P1NGon = 3;
+let P1NGon = 4;
 let P2NGon = 4;
 
 let xmin;
@@ -122,7 +122,7 @@ let ymax;
 function setup()
 {
     createCanvas(1000, 500);
-    P2Theta = radians(45.0);
+    // P2Theta = radians(45.0);
 
 
     /*
@@ -149,8 +149,8 @@ function setup()
 
 let origin     = new vec2(256, 256);
 let dir        = new vec2(1.0, 0.01);
-let A          = new vec2(255, 255);
-let B          = new vec2(455, 255);
+let A          = new vec2(200, 300);
+let B          = new vec2(600, 300);
 let overlapRes = 8.0;
 let rayStroke  = 0;
 
@@ -165,21 +165,21 @@ function draw()
 
 
     P1 = [];
-    // P2 = [];
+    P2 = [];
 
-    generateNGon(P1, P1NGon, A, 150, P1Theta);
-    // generateNGon(P2, P2NGon, B, 150, P2Theta);
+    generateNGon(P1, P1NGon, A, Math.sqrt(200*200 + 200*200), P1Theta);
+    generateNGon(P2, P2NGon, B, Math.sqrt(200*200 + 200*200), P2Theta);
 
 
     strokeWeight(2);
     rayStroke = 0;
 
     drawLines(P1);
-    drawLines(P3);
+    drawLines(P2);
 
     overlapRes = max(overlapRes, 1.0);
     overlapRes = min(overlapRes, 512.0);
-    let area = overlapArea(P1, P3, overlapRes);
+    let area = overlapArea(P1, P2, overlapRes);
 
 
     strokeWeight(1);
@@ -311,10 +311,7 @@ function overlapArea( A, B, width )
     noStroke();
 
     let area = 0.0;
-
-    let borders = [];
-
-    let step  = max(ymax-ymin, xmax-xmin) / width;
+    let step = max(ymax-ymin, xmax-xmin) / width;
 
     for (let y=ymin; y<=ymax; y+=step)
     {
@@ -324,7 +321,7 @@ function overlapArea( A, B, width )
 
             if (pointInPolygon(x, y, A) && pointInPolygon(x, y, B))
             {
-                area += (step / 100)**2;
+                area += (step)**2;
 
                 fill(100, 255, 100, 50);
             }

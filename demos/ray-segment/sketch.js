@@ -66,29 +66,39 @@ function vec2_line(a, b)
     line(a.x, a.y, b.x, b.y);
 }
 
+
 function ray_line_intersection(origin, dir, a, b)
 {
-    let u = vec2_sub(a, origin);
-    let v = vec2_sub(b, origin);
+    let v0 = vec2_sub(origin, a);
+    let v1 = vec2_sub(b, a);
+    let v2 = new vec2(-dir.y, dir.x);
 
-    let m = vec2_add(vec2_normalize(u), vec2_normalize(v));
-        m = vec2_div(m, 2);
-        m = vec2_normalize(m);
+    let t0 = vec2_cross(v1, v0) / vec2_dot(v1, v2);
+    let t1 = vec2_dot(v0, v2) / vec2_dot(v1, v2);
 
-    if (vec2_dot(dir, m) < 0.0)
-    {
-        return false;
-    }
+    return (t0 > 0.0) && (0.0 <= t1 && t1 <= 1.0);
 
-    const sign_a = Math.sign(vec2_cross(u, dir));
-    const sign_b = Math.sign(vec2_cross(dir, v));
+    // let u = vec2_sub(a, origin);
+    // let v = vec2_sub(b, origin);
 
-    if (sign_a != sign_b)
-    {
-        return false;
-    }
+    // let m = vec2_add(vec2_normalize(u), vec2_normalize(v));
+    //     m = vec2_div(m, 2);
+    //     m = vec2_normalize(m);
 
-    return true;
+    // if (vec2_dot(dir, m) < 0.0)
+    // {
+    //     return false;
+    // }
+
+    // const sign_a = Math.sign(vec2_cross(u, dir));
+    // const sign_b = Math.sign(vec2_cross(dir, v));
+
+    // if (sign_a != sign_b)
+    // {
+    //     return false;
+    // }
+
+    // return true;
 }
 
 

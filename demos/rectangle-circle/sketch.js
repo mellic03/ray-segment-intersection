@@ -11,6 +11,20 @@ let rh = 200;
 let theta = 0.0;
 
 
+function vec2_translate( x, y, dx, dy )
+{
+    return [x + dx, y + dy];
+}
+
+function vec2_rotate( x, y, theta )
+{
+    return [
+        x*cos(-theta) - y*sin(-theta),
+        x*sin(-theta) + y*cos(-theta)
+    ];
+}
+
+
 function clamp(n, a, b)
 {
     return max(a, min(n, b));
@@ -19,19 +33,16 @@ function clamp(n, a, b)
 
 function intersects()
 {
-    // de-translate
-    let x = cx - rx;
-    let y = cy - ry;
+    let p = [rx, ry];
+        p = vec2_translate (...p, -cx, -cy);
+        p = vec2_rotate    (...p, -theta);
 
-    // de-rotate
-    x = x*cos(-theta) - y*sin(-theta);
-    y = x*sin(-theta) + y*cos(-theta);
+    let x = p[0];
+    let y = p[1];
 
-    let nx = clamp(x, 0, rw);
-    let ny = clamp(y, 0, rh);
+    let nx = clamp(x, -rw/2, rw/2);
+    let ny = clamp(y, -rh/2, rh/2);
 
-    // circle(iix, iiy, 10);
-    // line(cx, cy, iix, iiy);
     let distSq = (nx-x)*(nx-x) + (ny-y)*(ny-y);
 
     if (distSq < r*r)
@@ -40,6 +51,48 @@ function intersects()
     }
 
     return false;
+}
+
+
+function drawRect( cx, cy, w, h, theta )
+{
+    w /= 2;
+    h /= 2;
+
+
+    let points = [
+        [cx-w, cy-h],
+        [cx-w, cy+h],
+        [cx+w, cy+h],
+        [cx+w, cy-h]
+    ];
+
+    for (let i=0; i<4; i++)
+    {
+        let p0 = points[i];
+            p0 = vec2_translate(...p0, -cx, -cy);
+            p0 = vec2_rotate(...p0, theta);
+            p0 = vec2_translate(...p0, cx, cy);
+
+        let p1 = points[(i+1)%4];
+            p1 = vec2_translate(...p1, -cx, -cy);
+            p1 = vec2_rotate(...p1, theta);
+            p1 = vec2_translate(...p1, cx, cy);
+    
+        line(...p0, ...p1);
+    }
+
+
+    // for (let i=cy-h; i<cy+h; i++)
+    // {
+    //     for (let j=cx-w; j<cx+w; j++)
+    //     {
+    //         let p = vec2_translate(j, i, -cx, -cy);
+    //             p = vec2_rotate(...p, theta);
+    //             p = vec2_translate(...p, cx, cy);
+    //         rect(...p, 1, 1);
+    //     }
+    // }
 }
 
 
@@ -72,53 +125,7 @@ function draw()
     text("clamp(cx, rx, rx+rw) = " + clamp(cx, rx, rx+rw), 20, 30);
 
 
-    let xmin = -rw;
-    let xmax = +rw;
-    let ymin = -rh;
-    let ymax = +rh;
+    drawRect(rx, ry, rw, rh, theta);
 
-    const S = sin(theta);
-    const C = cos(theta);
-
-    let x0 = (xmin)*C - (ymin)*S + rx;
-    let y0 = (ymin)*S + (xmin)*C + ry;
-
-    let x1 = (xmax)*C - (ymin)*S + rx;
-    let y1 = (ymin)*S + (xmax)*C + ry;
-
-    let x2 = (xmax)*C - (ymax)*S + rx;
-    let y2 = (ymax)*S + (xmax)*C + ry;
-
-    let x3 = (xmin)*C - (ymax)*S + rx;
-    let y3 = (ymax)*S + (xmin)*C + ry;
-
-
-    line(x0, y0, x1, y1);
-    line(x1, y1, x2, y2);
-    line(x2, y2, x3, y3);
-    line(x3, y3, x0, y0);
-
-
-    fill(255, 0, 0);
-    circle(x0, y0, 10);
-
-    fill(0, 255, 0);
-    circle(x1, y1, 10);
-
-    fill(0, 0, 255);
-    circle(x2, y2, 10);
-
-    fill(255, 255, 0);
-    circle(x3, y3, 10);
-
-
-
-
-
-    // translate(rx, ry);
-    // rotate(theta);
-    // noFill();
-    // rect(rx, ry, rw, rh);
-
-    theta += 0.01;
+    theta += 0.002;
 }
