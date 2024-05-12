@@ -6,8 +6,8 @@ let r = 50.0;
 
 let rx = 500;
 let ry = 250;
-let rw = 100;
-let rh = 200;
+let rw = 50;
+let rh = 100;
 let theta = 0.0;
 
 
@@ -40,8 +40,13 @@ function intersects()
     let x = p[0];
     let y = p[1];
 
-    let nx = clamp(x, -rw/2, rw/2);
-    let ny = clamp(y, -rh/2, rh/2);
+    let nx = clamp(x, -rw, rw);
+    let ny = clamp(y, -rh, rh);
+
+    // let pp = vec2_translate(...pp, cx, cy); 
+    // pp = vec2_rotate(nx, ny, theta); 
+
+    // line(cx, cy, ...pp);
 
     let distSq = (nx-x)*(nx-x) + (ny-y)*(ny-y);
 
@@ -56,10 +61,6 @@ function intersects()
 
 function drawRect( cx, cy, w, h, theta )
 {
-    w /= 2;
-    h /= 2;
-
-
     let points = [
         [cx-w, cy-h],
         [cx-w, cy+h],
@@ -81,18 +82,6 @@ function drawRect( cx, cy, w, h, theta )
     
         line(...p0, ...p1);
     }
-
-
-    // for (let i=cy-h; i<cy+h; i++)
-    // {
-    //     for (let j=cx-w; j<cx+w; j++)
-    //     {
-    //         let p = vec2_translate(j, i, -cx, -cy);
-    //             p = vec2_rotate(...p, theta);
-    //             p = vec2_translate(...p, cx, cy);
-    //         rect(...p, 1, 1);
-    //     }
-    // }
 }
 
 
@@ -109,7 +98,6 @@ function draw()
     cx = mouseX;
     cy = mouseY;
 
-
     if (intersects())
     {
         fill(100, 255, 100);
@@ -122,10 +110,7 @@ function draw()
     circle(cx, cy, r*2);
 
     fill(0);
-    text("clamp(cx, rx, rx+rw) = " + clamp(cx, rx, rx+rw), 20, 30);
-
-
     drawRect(rx, ry, rw, rh, theta);
 
-    theta += 0.002;
+    theta += 0.005;
 }
